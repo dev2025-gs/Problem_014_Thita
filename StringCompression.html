@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>String Compression – Visualizer</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f7fa;
+        padding: 20px;
+      }
+      h1 {
+        margin-bottom: 5px;
+      }
+      input {
+        width: 400px;
+        padding: 8px;
+        font-size: 16px;
+      }
+      button {
+        padding: 8px 14px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-left: 8px;
+      }
+      #chart {
+        display: flex;
+        align-items: flex-end;
+        height: 120px;
+        margin-top: 30px;
+        border-left: 2px solid #333;
+        border-bottom: 2px solid #333;
+        padding: 10px;
+        gap: 6px;
+      }
+      .bar {
+        width: 30px;
+        background: steelblue;
+        position: relative;
+        transition: background 0.3s;
+      }
+      .bar.active {
+        background: orange;
+      }
+      .bar span {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+      }
+      #info {
+        margin-top: 20px;
+        font-size: 18px;
+      }
+      #compressed {
+        margin-top: 20px;
+        font-size: 16px;
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>String Compression – Animation</h1>
+    <p>Enter array (comma separated):</p>
+    <input id="input" value="x,x,x,y,y,z,z,z,z,w,w,w,w,w,w,w,w,w,w,w" />
+    <button onclick="start()">Start Animation</button>
+    <button onclick="step()">Step</button>
+    <div id="chart"></div>
+    <div id="info"></div>
+    <div id="compressed"></div>
+    <script>
+      let chars, i, count, steps, compressed, finished;
+      function start() {
+        // Reset state
+        chars = document.getElementById("input").value.split(",").map(s => s.trim()).filter(s => s);
+        i = 0;
+        count = 0;
+        steps = [];
+        compressed = [];
+        finished = false;
+        document.getElementById("compressed").innerHTML = "";
+        document.getElementById("info").innerHTML = "";
+        draw();
+      }
+      function step() {
+        if (finished || chars.length === 0) return;
+        if (chars.length === 1) {
+          compressed = [chars[0]];
+          finished = true;
+          draw();
+          return;
+        }
+        if (i <= chars.length - 2) {
+          if (chars[i] === chars[i + 1]) {
+            count++;
+            i++;
+            if (i === chars.length - 1) {
+              if (count > 9) {
+                count++;
+                let y = String(count).split("").map(Number);
+                compressed.push(chars[i]);
+                compressed.push(y[0]);
+                compressed.push(y[1]);
+              } else {
+                compressed.push(chars[i]);
+                compressed.push(count + 1);
+                i++;
+              }
+            }
+          } else if (count > 0) {
+            if (count > 9) {
+              count++;
+              let y = String(count).split("").map(Number);
+              compressed.push(chars[i]);
+              compressed.push(y[0]);
+              compressed.push(y[1]);
+            } else {
+              compressed.push(chars[i]);
+              compressed.push(count + 1);
+              i++;
+              count = 0;
+            }
+          } else if (chars[i] !== chars[i + 1]) {
+            i++;
+          }
+        } else {
+          finished = true;
+        }
+        draw();
+      }
+      function draw() {
+        const chart = document.getElementById("chart");
+        chart.innerHTML = "";
+        chars.forEach((ch, idx) => {
+          const bar = document.createElement("div");
+          bar.className = "bar";
+          if (idx === i) bar.classList.add("active");
+          bar.style.height = "60px";
+          const label = document.createElement("span");
+          label.textContent = ch;
+          bar.appendChild(label);
+          chart.appendChild(bar);
+        });
+        let info = `Index: ${i}<br>Count: ${count}`;
+        if (finished) info += "<br><strong>✅ Done!</strong>";
+        document.getElementById("info").innerHTML = info;
+        document.getElementById("compressed").innerHTML =
+          "Compressed Output: " + compressed.join(", ");
+      }
+      // Initial draw
+      start();
+    </script>
+  </body>
+</html>
